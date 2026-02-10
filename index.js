@@ -1,7 +1,7 @@
-//Navigation Bar
+// Navigation Bar
 const nav = document.querySelector("nav");
-const effectEl = document.querySelector(".effect.filter");
-const textEl = document.querySelector(".effect.text");
+let effectEl = document.querySelector(".effect.filter");
+let textEl = document.querySelector(".effect.text");
 
 let animationTime = 600;
 let pCount = 15;
@@ -83,6 +83,9 @@ function createParticle(i, t, d, r) {
 }
 
 function updateEffectPosition(element) {
+  if (!nav || !effectEl || !textEl || !element) {
+    return;
+  }
   const navRect = nav.getBoundingClientRect();
   const pos = element.getBoundingClientRect();
   const left = pos.left - navRect.left;
@@ -101,6 +104,9 @@ function updateEffectPosition(element) {
 }
 
 const activate = ($el) => {
+  if (!nav || !effectEl || !textEl || !$el) {
+    return;
+  }
   updateEffectPosition($el);
 
   if (!$el.classList.contains("active")) {
@@ -121,28 +127,158 @@ const activate = ($el) => {
   }
 };
 
-nav.querySelectorAll("li").forEach(($el) => {
-  const link = $el.querySelector("a");
-  $el.addEventListener("click", () => {
-    activate($el);
-  });
-  link.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      activate($el);
-    }
-  });
-});
-
-if (effectEl && textEl && nav) {
-  try {
+function ensureNavEffects() {
+  if (!nav) {
+    return false;
+  }
+  if (!effectEl) {
+    effectEl = document.createElement("span");
+    effectEl.className = "effect filter";
+  }
+  if (!textEl) {
+    textEl = document.createElement("span");
+    textEl.className = "effect text hidden";
+  }
+  if (!nav.contains(effectEl)) {
     nav.appendChild(effectEl);
+  }
+  if (!nav.contains(textEl)) {
     nav.appendChild(textEl);
-  } catch (e) {}
+  }
+  return true;
+}
+
+function normalizePathname(pathname) {
+  const parts = pathname.split("/");
+  return parts[parts.length - 1].toLowerCase();
+}
+
+function resolveLinkInfo(link) {
+  const href = link.getAttribute("href") || "";
+  let url;
+  try {
+    url = new URL(href, window.location.href);
+  } catch (e) {
+    return { href, url: null };
+  }
+  const isHashOnly = href.startsWith("#");
+  const isSamePage = url.pathname === window.location.pathname;
+  return { href, url, isHashOnly, isSamePage };
+}
+
+function scrollToHash(hash) {
+  if (!hash) {
+    return false;
+  }
+  const target = document.querySelector(hash);
+  if (!target) {
+    return false;
+  }
+  target.scrollIntoView({ behavior: "smooth" });
+  return true;
+}
+
+function syncActiveFromUrl() {
+  if (!nav) {
+    return;
+  }
+  const links = Array.from(nav.querySelectorAll("li a"));
+  const currentPath = normalizePathname(window.location.pathname);
+  const currentHash = window.location.hash;
+
+  let match = links.find((link) => {
+    const { href, url, isHashOnly } = resolveLinkInfo(link);
+    if (!url) {
+      return false;
+    }
+    if (isHashOnly) {
+      return currentHash && href === currentHash;
+    }
+    const linkPath = normalizePathname(url.pathname);
+    if (url.hash) {
+      return linkPath === currentPath && url.hash === currentHash;
+    }
+    return linkPath === currentPath && !currentHash;
+  });
+
+  if (!match && !currentHash) {
+    const samePathLinks = links.filter((link) => {
+      const { url } = resolveLinkInfo(link);
+      if (!url) {
+        return false;
+      }
+      return normalizePathname(url.pathname) === currentPath;
+    });
+    if (samePathLinks.length > 0) {
+      match =
+        samePathLinks.find((link) => {
+          const { url } = resolveLinkInfo(link);
+          return url && !url.hash;
+        }) || samePathLinks[0];
+    }
+  }
+
+  if (!match && links.length > 0) {
+    match = links[0];
+  }
+
+  if (match) {
+    const li = match.closest("li");
+    if (li) {
+      activate(li);
+    }
+  }
+}
+
+function handleNavActivate(link, event) {
+  if (!link) {
+    return;
+  }
+  const li = link.closest("li");
+  if (li) {
+    activate(li);
+  }
+
+  const { url, isHashOnly, isSamePage } = resolveLinkInfo(link);
+  if (!url) {
+    return;
+  }
+  const shouldSmoothScroll = isHashOnly || (url.hash && isSamePage);
+  if (shouldSmoothScroll) {
+    if (event) {
+      event.preventDefault();
+    }
+    const didScroll = scrollToHash(url.hash);
+    if (didScroll) {
+      history.replaceState(null, "", url.hash);
+    }
+  }
+}
+
+if (ensureNavEffects()) {
+  nav.addEventListener("click", (event) => {
+    const link = event.target.closest("a");
+    if (!link || !nav.contains(link)) {
+      return;
+    }
+    handleNavActivate(link, event);
+  });
+
+  nav.querySelectorAll("li a").forEach((link) => {
+    link.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        handleNavActivate(link, event);
+      }
+    });
+  });
 }
 
 let scrollTimeout;
 window.addEventListener("scroll", () => {
+  if (!nav) {
+    return;
+  }
   const activeEl = nav.querySelector("li.active");
   if (activeEl) {
     if (scrollTimeout) {
@@ -155,6 +291,9 @@ window.addEventListener("scroll", () => {
 });
 
 const resizeObserver = new ResizeObserver(() => {
+  if (!nav) {
+    return;
+  }
   const activeEl = nav.querySelector("li.active");
   if (activeEl) {
     updateEffectPosition(activeEl);
@@ -163,23 +302,13 @@ const resizeObserver = new ResizeObserver(() => {
 
 resizeObserver.observe(document.body);
 
-setTimeout(() => {
-  activate(nav.querySelector("li"));
-}, 200);
-
-document.addEventListener("DOMContentLoaded", function () {
-  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-    anchor.addEventListener("click", function (e) {
-      e.preventDefault();
-      const target = document.querySelector(this.getAttribute("href"));
-      if (target) {
-        target.scrollIntoView({
-          behavior: "smooth",
-        });
-      }
-    });
-  });
+window.addEventListener("hashchange", () => {
+  syncActiveFromUrl();
 });
+
+setTimeout(() => {
+  syncActiveFromUrl();
+}, 200);
 jQuery(document).ready(function ($) {
   var timelines = $(".cd-horizontal-timeline"),
     eventsMinDistance = 60;
