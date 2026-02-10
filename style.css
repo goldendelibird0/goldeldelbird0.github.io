@@ -3143,3 +3143,186 @@ body {
     font-size: 12px;
   }
 }
+
+/* Mobile-friendly layout enhancements */
+@media (max-width: 900px) {
+  nav {
+    width: calc(100% - 24px);
+    left: 12px;
+    transform: none;
+    padding: 0.4rem 0.5rem;
+  }
+
+  nav ul {
+    gap: 10px;
+    padding: 0 0.4rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  nav ul::-webkit-scrollbar {
+    display: none;
+  }
+
+  nav ul li {
+    flex: 0 0 auto;
+    padding: 0.4rem 0.75rem;
+  }
+
+  .hero-section {
+    padding-top: 96px;
+  }
+
+  .hero-content {
+    padding: 40px 4% 60px;
+    gap: 28px;
+  }
+
+  .hero-title {
+    font-size: 40px;
+  }
+
+  .hero-description {
+    font-size: 16px;
+  }
+
+  .cta-buttons {
+    gap: 12px;
+  }
+
+  .btn {
+    min-height: 44px;
+  }
+
+  .projects-header {
+    text-align: center;
+  }
+
+  .projects-subtitle {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .slider-controls {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  nav {
+    top: 10px;
+  }
+
+  nav ul {
+    gap: 6px;
+  }
+
+  nav ul li {
+    padding: 0.35rem 0.6rem;
+  }
+
+  nav ul li a {
+    font-size: 13px;
+  }
+
+  .hero-title {
+    font-size: 30px;
+  }
+
+  .hero-subtitle {
+    font-size: 20px;
+  }
+
+  .status-badge {
+    font-size: 12px;
+  }
+
+  .social-links {
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .social-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+  }
+
+  .projects-section {
+    padding-top: 40px;
+  }
+
+  .slider-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .slider-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .footer-content {
+    text-align: center;
+  }
+
+  .footer-links {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .hero-content {
+    width: 92%;
+    padding: 32px 0 50px;
+  }
+
+  .profile-pic {
+    width: 130px;
+    height: 130px;
+  }
+
+  .projects-title {
+    font-size: 24px;
+  }
+
+  .projects-subtitle {
+    font-size: 13px;
+  }
+
+  .modal-actions {
+    gap: 12px;
+  }
+
+  .modal-btn {
+    min-height: 44px;
+  }
+
+  .about-layout {
+    gap: 24px;
+  }
+
+  .profile-photo {
+    height: 320px;
+  }
+
+  .content-box {
+    padding: 22px;
+  }
+
+  .about-heading {
+    font-size: 26px;
+  }
+
+  .timeline-year {
+    width: 44px;
+  }
+
+  .year-badge {
+    width: 44px;
+    height: 44px;
+    font-size: 12px;
+  }
+}
